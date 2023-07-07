@@ -1,3 +1,4 @@
+const redis = require('./redis-client');
 const express = require('express');
 const app = express();
 
@@ -9,7 +10,20 @@ app.post('/data', async (req, res) => {
     (t) => t.json()
   );
 
+  const value = await redis.get(repo);
+  if (value) {
+    return res.json({
+      from: 'redis',
+      status: 'ok',
+      stars: value,
+    });
+  }
+
+  if (response.stargazers_count != undefined)
+    await redis.set(repo, response.stargazers_count);
+
   res.json({
+    from: 'remote',
     status: 'ok',
     stars: response.stargazers_count,
   });
