@@ -6,9 +6,6 @@ app.use(express.json());
 
 app.post('/data', async (req, res) => {
   const repo = req.body.repo;
-  const response = await fetch(`https://api.github.com/repos/${repo}`).then(
-    (t) => t.json()
-  );
 
   const value = await redis.get(repo);
   if (value) {
@@ -18,6 +15,10 @@ app.post('/data', async (req, res) => {
       stars: value,
     });
   }
+
+  const response = await fetch(`https://api.github.com/repos/${repo}`).then(
+    (t) => t.json()
+  );
 
   if (response.stargazers_count != undefined)
     await redis.set(repo, response.stargazers_count);
