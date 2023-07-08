@@ -11,12 +11,21 @@ app.post('/data', async (req, res) => {
   const value = await redis.get(repo);
   if (value) {
     const timeEnd = Date.now();
-    return res.json({
+    res.json({
       from: 'redis',
       status: 'ok',
       stars: value,
       timeForRet: timeEnd - timeStart,
     });
+
+    const response = await fetch(`https://api.github.com/repos/${repo}`).then(
+      (t) => t.json()
+    );
+
+    if (response.stargazers_count != undefined)
+      await redis.setex(repo, 60, response.stargazers_count);
+
+    return;
   }
 
   timeStart = Date.now(); // re-initialize again for remote
